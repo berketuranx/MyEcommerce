@@ -13,7 +13,9 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<MyEcommerceContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DBconnection")));
 
-builder.Services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<MyEcommerceContext>();
+
+//Token iþlemi tanýmlandýðýnda user kayýt iþlemi yaptýðýmýzda mail geliyordu ama uygulama çalýþýrken hata veriyordu home pageye gidemiyorduk. AddDefaultTokenProviders() tanýmlayarak bu sorun çözüldü.
+builder.Services.AddIdentity<AppUser, IdentityRole>().AddDefaultTokenProviders().AddEntityFrameworkStores<MyEcommerceContext>();
 
 //cookie
 builder.Services.ConfigureApplicationCookie(x =>

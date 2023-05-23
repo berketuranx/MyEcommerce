@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MVC_MyProject.Models.ViewModel;
+using MyEcommerce.Common;
 using MyEcommerce.DAL.Context;
 using MyEcommerce.Entity.Entity;
+using System.Web;
 
 namespace MVC_MyProject.Controllers
 {
@@ -44,6 +46,12 @@ namespace MVC_MyProject.Controllers
 
                 if (result.Succeeded)
                 {
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);   
+                    var encodedToken = HttpUtility.UrlEncode(token);
+
+
+                    string confirmationLink = Url.Action("Confirmation", "User", new {id= user.Id, token= encodedToken},Request.Scheme );
+                    MailSender.SendEmail(registerVM.Email,"Confirmation", $"{registerVM.Username} kayıt işleminiz başarılı! Üyeliğinizi aktif hale getirebilmek için linke tıklayınız.{confirmationLink} ");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -60,6 +68,22 @@ namespace MVC_MyProject.Controllers
                 return View(registerVM);
             }
 
+        }
+
+        public async Task<IActionResult> Confirmation(string? id, string? token)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return RedirectToAction("Create");
+            }
+            var decodedToken = HttpUtility.UrlDecode(token);
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+            if (result.Succeeded)
+            {
+                return View("Index", "Home");
+            }
+            return RedirectToAction("Create");
         }
 
         public IActionResult Login()
